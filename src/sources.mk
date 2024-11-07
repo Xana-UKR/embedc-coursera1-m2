@@ -18,11 +18,11 @@ ifeq ($(PLATFORM), MSP432)
 		  system_msp432p401r.c \
 		  interrupts_msp432p401r_gcc.c
 		
-	# Include paths to this variable for MSP432 plaform 
+	# Include paths to this variable for MSP432 platform 
 	INCLUDES = -I../include/common \
 		   -I../include/CMSIS \
-		   -I../include/msp432 \
-		   -I..
+		   -I../include/msp432 
+		   
 else
 	ifneq ($(PLATFORM), HOST)
                 $(info Define PTALFORM=HOST or PLATFORM=MSP432, \

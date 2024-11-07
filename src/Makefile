@@ -37,7 +37,7 @@ TARGET = c1m2
 
 ifeq ($(PLATFORM), MSP432)
 	# Architectures Specific Flags
-	LINKER_FILE = -T msp432p401r.lds
+	LINKER_FILE = -T ../msp432p401r.lds
 
 	ARCH_SPEC =-mcpu=cortex-m4 \
 	           -mthumb \
