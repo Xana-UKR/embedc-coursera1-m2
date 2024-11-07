@@ -10,32 +10,94 @@
 #*****************************************************************************
 
 #------------------------------------------------------------------------------
-# <Put a Description Here>
+# Makefile for the MSP432 or HOST build system
 #
 # Use: make [TARGET] [PLATFORM-OVERRIDES]
 #
 # Build Targets:
-#      <Put a description of the supported targets here>
+#      <FILE>.i 	- Builds <FILE>.i preprocessed file
+#      <FILE>.asm 	- Builds <FILE>.asm assembly file
+#      <FILE>.o 	- Builds <FILE>.o object file
+#      compile-all 	- Compiles all object files, but do not link
+#      build 		- Compile and link all into a final executable c1m2.out
+#      all 		- Same as build
+#      c1m2.out		- Same as build
+#      clean 		- Removes all generated files (*.map, *.out, *.o, *.asm, *.i)
 #
 # Platform Overrides:
-#      <Put a description of the supported Overrides here
+#      PLATFORM		- HOST or MPS432, deafult is HOST
 #
 #------------------------------------------------------------------------------
 include sources.mk
 
 # Platform Overrides
-PLATFORM = 
+PLATFORM = HOST
 
-# Architectures Specific Flags
-LINKER_FILE = 
-CPU = 
-ARCH = 
-SPECS = 
+TARGET = c1m2
 
-# Compiler Flags and Defines
-CC = 
-LD = 
-LDFLAGS = 
-CFLAGS = 
-CPPFLAGs = 
+ifeq ($(PLATFORM), MPS432)
+	# Architectures Specific Flags
+	LINKER_FILE = -T msp432p401r.lds
 
+	ARCH_SPEC =-mcpu=cortex-m4 \
+	           -mthumb \
+	           -march=armv7e-m \
+	           -mfloat-abi=hard \
+	           -mfpu=fpv4-sp-d16 \
+	           --spec=nosys.specs
+	      
+	TARGET_PLATF = -DMSP432
+	
+	# Compiler Flags and Defines
+	CC = arm-none-eabi-gcc
+	LD = arm-none-eabi-ld
+else
+	# Architectures Specific Flags
+	LINKER_FILE = #no linker file for host
+
+	ARCH_SPEC = #no architecture-specific flags for host
+	      
+	TARGET_PLATF = -DHOST
+	
+	# Compiler Flags and Defines
+	CC = gcc
+	LD = ld
+endif
+
+	LDFLAGS = -Wl,-Map=$(TARGET).map $(LINKER_FILE)
+	CFLAGS = -Wall -Werror -g -O0 -std=c99 $(ARCH_SPEC)
+	CPPFLAGS = $(INCLUDES) $(TARGET_PLATF)
+
+OBJS = $(SOURCES:.c=.o)
+ASMS = $(SOURCES:.c=.asm)
+PREPS=$(SOURCES:.c=.i)
+
+# Create preprocessed files
+%.i : %.c
+	$(CC) -E $^ $(CPPFLAGS) -o $@
+	
+# Create assemly files
+%.asm : %.c
+	$(CC) -S $^ $(CPPFLAGS) $(CFLAGS) -o $@
+
+# Create object files
+%.o : %.c
+	$(CC) -c $^ $(CPPFLAGS) $(CFLAGS) -o $@
+
+.PHONY: compile-all
+compile-all: $(SOURCES)
+	$(CC) -c $^ $(CPPFLAGS) $(CFLAGS) -o $(OBJS)
+	
+.PHONY: build
+build: all
+
+.PHONY: all
+all: $(TARGET).out
+
+$(TARGET).out: $(OBJS)
+	$(CC) $(OBJS) $(CPPFLAGS) $(CFALGS) $(LDFLAGS) -o $@
+	
+.PHONY: clean
+clean: 
+	rm -f $(OBJS) $(TARGET).out $(TARGET).map $(ASMS) $(PREPS)
+	

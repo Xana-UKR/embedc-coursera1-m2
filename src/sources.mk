@@ -8,10 +8,33 @@
 # misuse of this material. 
 #
 #*****************************************************************************
+DEFAULT_PLAFORM = HOST
 
-# Add your Source files to this variable
-SOURCES =
+ifeq ($(PLATFORM), MSP432)
+	# Source files to this variable for MSP432 platform
+	SOURCES = main.c \
+		  memory.c \
+		  startup_msp432p401r_gcc.c \
+		  system_msp432p401r.c \
+		  interrupts_msp432p401r_gcc.c
+		
+	# Include paths to this variable for MSP432 plaform 
+	INCLUDES = -I../include/common \
+		   -I../include/CMSIS \
+		   -I../include/msp432
+else
+	ifneq ($(PLATFORM), HOST)
+                $(info Define PTALFORM=HOST or PLATFORM=MSP432, \
+                by defualt HOST is used)
+	endif
 
-# Add your include paths to this variable
-INCLUDES = 
+	# Source files for HOST platform
+	SOURCES =  main.c \
+	 	   memory.c
+		 	   
+	# Include paths for HOST platform
+	INCLUDES = -I../include/common
+
+endif
+
 
