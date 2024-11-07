@@ -35,7 +35,7 @@ PLATFORM = HOST
 
 TARGET = c1m2
 
-ifeq ($(PLATFORM), MPS432)
+ifeq ($(PLATFORM), MSP432)
 	# Architectures Specific Flags
 	LINKER_FILE = -T msp432p401r.lds
 
@@ -44,7 +44,7 @@ ifeq ($(PLATFORM), MPS432)
 	           -march=armv7e-m \
 	           -mfloat-abi=hard \
 	           -mfpu=fpv4-sp-d16 \
-	           --spec=nosys.specs
+	           --specs=nosys.specs
 	      
 	TARGET_PLATF = -DMSP432
 	
