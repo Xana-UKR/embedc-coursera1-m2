@@ -65,7 +65,7 @@ else
 endif
 
 LDFLAGS = -Wl,-Map=$(TARGET).map $(LINKER_FILE)
-CFLAGS = -Wall -Werror -g -O0 -std=c99 $(ARCH_SPEC)
+CFLAGS = -Wall -g -O0 -std=c99 $(ARCH_SPEC)
 CPPFLAGS = $(INCLUDES) $(TARGET_PLATF)
 DEPFLAGS = -MMD -MP -MF $(basename $@).dep
 
@@ -102,8 +102,8 @@ build: all
 all: $(TARGET).out
 
 $(TARGET).out: $(OBJS)
-#$(CC) $^ $(CPPFLAGS) $(CFALGS) $(LDFLAGS) -o $@
-	$(CC) $^ $(LDFLAGS) -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $^ -o $@
+#$(CC) $^ $(LDFLAGS) -o $@
 
 # Full clean
 .PHONY: clean
