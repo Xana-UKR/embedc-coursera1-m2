@@ -22,7 +22,7 @@
 #      build 		- Compile and link all into a final executable c1m2.out
 #      all 		- Same as build
 #      c1m2.out		- Same as build
-#      clean 		- Removes all generated files (*.map, *.out, *.o, *.asm, *.i)
+#      clean 		- Removes all generated files (*.map, *.out, *.o, *.asm, *.i, *.dep)
 #
 # Platform Overrides:
 #      PLATFORM		- HOST or MPS432, deafult is HOST
@@ -64,25 +64,32 @@ else
 	LD = ld
 endif
 
-	LDFLAGS = -Wl,-Map=$(TARGET).map $(LINKER_FILE)
-	CFLAGS = -Wall -Werror -g -O0 -std=c99 $(ARCH_SPEC)
-	CPPFLAGS = $(INCLUDES) $(TARGET_PLATF)
+LDFLAGS = -Wl,-Map=$(TARGET).map $(LINKER_FILE)
+CFLAGS = -Wall -Werror -g -O0 -std=c99 $(ARCH_SPEC)
+CPPFLAGS = $(INCLUDES) $(TARGET_PLATF)
+DEPFLAGS = -MMD -MP -MF $(basename $@).dep
+
 
 OBJS = $(SOURCES:.c=.o)
 ASMS = $(SOURCES:.c=.asm)
 PREPS=$(SOURCES:.c=.i)
+DEPS=$(SOURCES:.c=.dep)
+
 
 # Create preprocessed files
+
 %.i : %.c
-	$(CC) -E $^ $(CPPFLAGS) -o $@
+	$(CC) -E $< $(CPPFLAGS) -o $@
 	
 # Create assemly files
 %.asm : %.c
-	$(CC) -S $^ $(CPPFLAGS) $(CFLAGS) -o $@
+	$(CC) -S $< $(CPPFLAGS) $(CFLAGS) -o $@
 
 # Create object files
 %.o : %.c
-	$(CC) -c $^ $(CPPFLAGS) $(CFLAGS) -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
+
+# Full build
 
 .PHONY: compile-all
 compile-all: $(SOURCES)
@@ -95,9 +102,11 @@ build: all
 all: $(TARGET).out
 
 $(TARGET).out: $(OBJS)
-	$(CC) $(OBJS) $(CPPFLAGS) $(CFALGS) $(LDFLAGS) -o $@
-	
+#$(CC) $^ $(CPPFLAGS) $(CFALGS) $(LDFLAGS) -o $@
+	$(CC) $^ $(LDFLAGS) -o $@
+
+# Full clean
 .PHONY: clean
 clean: 
-	rm -f $(OBJS) $(TARGET).out $(TARGET).map $(ASMS) $(PREPS)
+	rm -f $(OBJS) $(TARGET).out $(TARGET).map $(ASMS) $(PREPS) $(DEPS)
 	
