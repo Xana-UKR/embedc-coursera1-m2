@@ -67,8 +67,8 @@ endif
 LDFLAGS = -Wl,-Map=$(TARGET).map $(LINKER_FILE)
 CFLAGS = -Wall -g -O0 -std=c99 $(ARCH_SPEC)
 CPPFLAGS = $(INCLUDES) $(TARGET_PLATF)
-DEPFLAGS = -MMD -MP -MF $(basename $@).dep
-
+#DEPFLAGS = -MM -MP -MF $(basename $@).dep
+DEPFLAGS = -MM -MP 
 
 OBJS = $(SOURCES:.c=.o)
 ASMS = $(SOURCES:.c=.asm)
@@ -77,6 +77,8 @@ DEPS=$(SOURCES:.c=.dep)
 
 
 # Create preprocessed files
+%.dep : %.c
+	$(CC) $< $(CPPFLAGS) $(DEPFLAGS) -MF $@
 
 %.i : %.c
 	$(CC) -E $< $(CPPFLAGS) -o $@
@@ -87,7 +89,8 @@ DEPS=$(SOURCES:.c=.dep)
 
 # Create object files
 %.o : %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+#$(CC) $(CPPFLAGS) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
 
 # Full build
 
@@ -101,9 +104,9 @@ build: all
 .PHONY: all
 all: $(TARGET).out
 
-$(TARGET).out: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $^ -o $@
-#$(CC) $^ $(LDFLAGS) -o $@
+$(TARGET).out: $(OBJS) $(DEPS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@
+
 
 # Full clean
 .PHONY: clean
